@@ -5,3 +5,5 @@ Olen tekemässä **musiikintoistosovellusta**, jonka ominaisuudet tulevat keskit
 https://github.com/fallmx/ot-harjoitustyo/tree/master/laskarit
 
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/vaatimusmaarittely.md
+
+https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/tuntikirjanpito.md
