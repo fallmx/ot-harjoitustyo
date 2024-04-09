@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "soittokone"
+version = "0.0.1"
+description = "a musical accompaniment app"
+authors = ["fallmx <31561277+fallmx@users.noreply.github.com>"]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+pyside6 = "^6.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
