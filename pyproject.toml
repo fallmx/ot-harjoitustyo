@@ -12,6 +12,7 @@ pyside6 = "^6.7.0"
 sounddevice = "^0.4.6"
 soundfile = "^0.12.1"
 numpy = "^1.26.4"
+invoke = "^2.2.0"
 
 
 [build-system]

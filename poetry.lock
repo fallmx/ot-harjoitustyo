@@ -65,6 +65,17 @@ files = [
 pycparser = "*"
 
 [[package]]
+name = "invoke"
+version = "2.2.0"
+description = "Pythonic task execution"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "invoke-2.2.0-py3-none-any.whl", hash = "sha256:6ea924cc53d4f78e3d98bc436b08069a03077e6f85ad1ddaa8a116d7dad15820"},
+    {file = "invoke-2.2.0.tar.gz", hash = "sha256:ee6cbb101af1a859c7fe84f2a264c059020b0cb7fe3535f9424300ab568f6bd5"},
+]
+
+[[package]]
 name = "numpy"
 version = "1.26.4"
 description = "Fundamental package for array computing in Python"
@@ -230,4 +241,4 @@ numpy = ["numpy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "2739a5c14b6b0f4fcec8543b90308ee418e90a1e1be2999936a8f9e7a34cd5b5"
+content-hash = "5279cdaa09333baf950426057e33b78557d3a8e120f301de9c40cbafed230cc4"
