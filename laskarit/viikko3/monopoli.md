@@ -28,9 +28,9 @@ classDiagram
         raha
     }
     class Korttiruutu {
-        enum tyyppi = SATTUMA | YHTEISKUNTA
+        enum tyyppi = SATTUMA | YHTEISMAA
     }
     class Kortti {
-        enum tyyppi = SATTUMA | YHTEISKUNTA
+        enum tyyppi = SATTUMA | YHTEISMAA
     }
 ```
