@@ -1,20 +1,22 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-from PySide6 import QtCore, QtWidgets
-import sounddevice as sd
-import soundfile as sf
+from PySide6.QtCore import Slot, Qt
+from PySide6 import QtWidgets
+from audio_player import AudioPlayer
 
 class MainWindow(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.filename = ""
         self.playing = False
-        self.audio_data = None
-        self.sample_rate = None
+        self.audio = AudioPlayer()
+
+        self.audio.played.connect(self.played)
+        self.audio.paused.connect(self.paused)
+        self.audio.file_loaded.connect(self.file_loaded)
 
         self.play_button = QtWidgets.QPushButton("Play")
         self.play_button.setEnabled(False)
         self.filename_text = QtWidgets.QLabel("No audio file loaded",
-                                              alignment=QtCore.Qt.AlignCenter)
+                                              alignment=Qt.AlignCenter)
         self.load_button = QtWidgets.QPushButton("Load audio file")
 
         self.layout = QtWidgets.QVBoxLayout(self)
@@ -25,35 +27,35 @@ class MainWindow(QtWidgets.QWidget):
         self.play_button.clicked.connect(self.toggle_playback)
         self.load_button.clicked.connect(self.load_audio_file)
 
-    @QtCore.Slot()
-    def play(self):
+    @Slot()
+    def played(self):
         self.playing = True
         self.play_button.setText("Pause")
-        sd.play(self.audio_data, self.sample_rate)
     
-    @QtCore.Slot()
-    def pause(self):
+    @Slot()
+    def paused(self):
         self.playing = False
         self.play_button.setText("Play")
-        sd.stop()
     
-    @QtCore.Slot()
+    @Slot(str)
+    def file_loaded(self, path):
+        self.filename_text.setText(path)
+        self.play_button.setEnabled(True)
+    
+    @Slot()
     def toggle_playback(self):
         if self.playing:
-            self.pause()
+            self.audio.pause()
         else:
-            self.play()
+            self.audio.play()
 
-    @QtCore.Slot()
+    @Slot()
     def load_audio_file(self):
-        self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(self,
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(self,
                                                          "Load audio file",
                                                          "/home")
-        if self.filename != "":
-            self.pause()
-            self.filename_text.setText(self.filename)
-            self.play_button.setEnabled(True)
-            self.audio_data, self.sample_rate = sf.read(self.filename)
+        if path != "":
+            self.audio.load_file(path)
 
 def main():
     app = QtWidgets.QApplication([])
