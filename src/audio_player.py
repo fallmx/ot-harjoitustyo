@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 import numpy
 from PySide6.QtCore import QObject, Signal
 import sounddevice as sd
@@ -6,7 +7,8 @@ import soundfile as sf
 class AudioPlayer(QObject):
     played = Signal()
     paused = Signal()
-    file_loaded = Signal(str)
+    file_loaded = Signal(str, int)
+    time_changed = Signal(int)
 
     def __init__(self):
         super().__init__()
@@ -15,8 +17,12 @@ class AudioPlayer(QObject):
 
         self.stream: sd.OutputStream = None
         self.sample = 0
-
         self.finished = False
+
+        self._last_time_seconds = 0
+
+    def time_seconds(self) -> int:
+        return self.sample // self.samplerate
 
     def finished_callback(self):
         if self.finished:
@@ -32,12 +38,18 @@ class AudioPlayer(QObject):
             chunksize = min(len(self.data) - self.sample, frames)
             outdata[:chunksize] = self.data[self.sample:self.sample + chunksize]
 
+            self.sample += chunksize
+
+            current_time = self.time_seconds()
+
+            if current_time != self._last_time_seconds:
+                self._last_time_seconds = current_time
+                self.time_changed.emit(current_time)
+
             if chunksize < frames:
                 outdata[chunksize:] = 0
                 self.finished = True
                 raise sd.CallbackStop()
-            
-            self.sample += chunksize
 
         self.stream = sd.OutputStream(
             samplerate=self.samplerate,
@@ -51,15 +63,21 @@ class AudioPlayer(QObject):
             self.stream.abort()
 
         self.data, self.samplerate = sf.read(path, always_2d=True)
-        self.sample = 0
         self.init_stream()
-        self.file_loaded.emit(path)
+        length = len(self.data) // self.samplerate
+        self.file_loaded.emit(path, length)
+        self.goto(0)
+    
+    def goto(self, sample: int):
+        if self.stream is not None:
+            self.sample = min(len(self.data) - 1, sample)
+            self.finished = False
+            self.time_changed.emit(self.time_seconds())
     
     def play(self):
         if self.stream is not None and self.stream.active == False:
             if self.finished:
-                self.sample = 0
-                self.finished = False
+                self.goto(0)
 
             self.stream.start()
             self.played.emit()
