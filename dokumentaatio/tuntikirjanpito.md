@@ -6,3 +6,5 @@
 | 9.4   | 4    | Basic audio playback |
 | 14.4  | 6    | Add pausing audio |
 | 15.4  | 3    | Add playback time |
+| 16.4  | 9    | Add markers and playback bar |
+| yht.  | 23   |  |

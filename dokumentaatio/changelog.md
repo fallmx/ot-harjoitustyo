@@ -2,3 +2,8 @@
 
 - Käyttäjä voi ladata äänitiedoston
 - Käyttäjä voi soittaa äänitiedostoa
+
+## Viikko 4
+
+- Käyttäjä voi asettaa merkkejä eri ajankohtiin äänitiedostossa
+- Toisto pysähtyy merkkeihin
