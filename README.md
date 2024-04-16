@@ -9,6 +9,12 @@ poetry install
 poetry run invoke start
 ```
 
+## Pylint
+
+```
+poetry run invoke lint
+```
+
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/vaatimusmaarittely.md
 
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/tuntikirjanpito.md
