@@ -17,25 +17,39 @@ class AudioPlayer(QObject):
 
         self.stream: sd.OutputStream = None
         self.sample = 0
-        self.finished = False
+        self.stopped = False
+        self.stop_sample: int = None
 
         self._last_time_seconds = 0
 
     def time_seconds(self) -> int:
         return self.sample // self.samplerate
 
+    def get_time_ms(self) -> int:
+        return self.sample * 1000 // self.samplerate
+    
+    def stop_at_time_ms(self, time_ms):
+        self.stop_sample = self.samplerate * time_ms // 1000
+
     def finished_callback(self):
-        if self.finished:
+        if self.stopped:
             self.init_stream()
+            self.stopped = False
             
         self.paused.emit()
+
+    def get_sample_boundary(self):
+        if self.stop_sample is not None and self.sample < self.stop_sample:
+            return self.stop_sample
+        else:
+            return len(self.data)
     
     def init_stream(self):
         def callback(outdata: numpy.ndarray,
                      frames: int,
                      time,
                      status):
-            chunksize = min(len(self.data) - self.sample, frames)
+            chunksize = min(self.get_sample_boundary() - self.sample, frames)
             outdata[:chunksize] = self.data[self.sample:self.sample + chunksize]
 
             self.sample += chunksize
@@ -48,7 +62,7 @@ class AudioPlayer(QObject):
 
             if chunksize < frames:
                 outdata[chunksize:] = 0
-                self.finished = True
+                self.stopped = True
                 raise sd.CallbackStop()
 
         self.stream = sd.OutputStream(
@@ -70,14 +84,17 @@ class AudioPlayer(QObject):
     
     def goto(self, sample: int):
         if self.stream is not None:
-            self.sample = min(len(self.data) - 1, sample)
-            self.finished = False
+            self.sample = sample
             self.time_changed.emit(self.time_seconds())
+    
+    def goto_s(self, time_s):
+        sample = self.samplerate * time_s
+        self.goto(sample)
     
     def play(self):
         if self.stream is not None and self.stream.active == False:
-            if self.finished:
-                self.goto(0)
+            if self.sample == len(self.data):
+                self.sample = 0
 
             self.stream.start()
             self.played.emit()
