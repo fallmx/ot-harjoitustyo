@@ -4,6 +4,7 @@ from PySide6 import QtWidgets
 from audio_player import AudioPlayer
 from project import Project
 
+
 class PlaybackBar(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -21,10 +22,11 @@ class PlaybackBar(QtWidgets.QWidget):
         self.vlayout.addStretch()
 
         self.setLayout(self.vlayout)
-    
+
     def add_marker_widget(self, time_ms: int):
         marker = QtWidgets.QLabel(f"{time_ms // 1000} s")
         self.marker_layout.addWidget(marker)
+
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -61,7 +63,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.playback_bar = PlaybackBar()
         self.playback_bar.setEnabled(False)
-        self.playback_bar.slider.valueChanged.connect(self.playback_bar_changed)
+        self.playback_bar.slider.valueChanged.connect(
+            self.playback_bar_changed)
 
         self.time_text = QtWidgets.QLabel("0:00/0:00",
                                           alignment=Qt.AlignmentFlag.AlignCenter)
@@ -86,12 +89,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def played(self):
         self.playing = True
         self.play_button.setText("Pause")
-    
+
     @Slot()
     def paused(self):
         self.playing = False
         self.play_button.setText("Play")
-    
+
     @Slot()
     def set_marker(self):
         time_ms = self.audio.get_time_ms()
@@ -100,7 +103,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @Slot(int)
     def marker_added(self, time_ms: int):
         self.playback_bar.add_marker_widget(time_ms)
-    
+
     @Slot(str, int)
     def file_loaded(self, path: str, length: int):
         self.length = length
@@ -109,7 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.set_button.setEnabled(True)
         self.playback_bar.slider.setMaximum(length)
         self.playback_bar.setEnabled(True)
-    
+
     @Slot(int)
     def playback_bar_changed(self, new_time: int):
         self.audio.goto_s(new_time)
@@ -118,13 +121,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def time_changed(self, new_time: int):
         self.time_text.setText(
             f"{self.to_timestamp(new_time)}/{self.to_timestamp(self.length)}")
-        
-        if self.playback_bar.slider.isSliderDown() == False:
+
+        if self.playback_bar.slider.isSliderDown() is False:
             self.playback_bar.slider.setValue(new_time)
 
-        next_marker_time_ms = self.project.get_next_marker_time_ms(new_time * 1000)
+        next_marker_time_ms = self.project.get_next_marker_time_ms(
+            new_time * 1000)
         self.audio.stop_at_time_ms(next_marker_time_ms)
-    
+
     @Slot()
     def toggle_playback(self):
         if self.playing:
@@ -135,14 +139,15 @@ class MainWindow(QtWidgets.QMainWindow):
     @Slot()
     def load_audio_file(self):
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self,
-                                                         "Load audio file",
-                                                         "/home")
+                                                        "Load audio file",
+                                                        "/home")
         if path != "":
             self.audio.load_file(path)
-    
+
     def to_timestamp(self, time_seconds: int) -> str:
         minutes, seconds = divmod(time_seconds, 60)
         return f"{minutes}:{seconds:02}"
+
 
 def main():
     app = QtWidgets.QApplication([])
@@ -153,6 +158,7 @@ def main():
     main_window.show()
 
     app.exec()
+
 
 if __name__ == "__main__":
     main()
