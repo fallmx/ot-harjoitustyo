@@ -6,10 +6,10 @@ Sovelluksella voi soittaa äänitiedostoja, kuten säestysraitoja, ja lisätä t
 
 ## Perustoiminnallisuudet
 
-- Käyttäjä voi tuoda äänitiedoston ohjelmaan
-- Käyttäjä voi soittaa äänitiedostoa
-- Käyttäjä voi asettaa merkkejä eri ajankohtiin äänitiedostossa
-- Toisto pysähtyy merkkeihin
+- ✅ Käyttäjä voi tuoda äänitiedoston ohjelmaan
+- ✅ Käyttäjä voi soittaa äänitiedostoa
+- ✅ Käyttäjä voi asettaa merkkejä eri ajankohtiin äänitiedostossa
+- ✅ Toisto pysähtyy merkkeihin
 - Käyttäjä voi määritellä haluamansa näppäimistö/MIDI-syötteen jatkamaan toistoa 
 - Jos toisto ei ole pysähtynyt ja käyttäjä antaa syötteen, äänentoisto hyppää seuraavaan merkkiin
 - Äänitiedostoon lisätyt merkit voidaan tallentaa/ladata projektitiedostosta
