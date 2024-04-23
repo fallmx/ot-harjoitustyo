@@ -85,10 +85,10 @@ class Project(QObject):
             if next_marker is None:
                 prev_marker = self._get_last_marker()
             else:
-                prev_marker = next_marker.prev
+                if next_marker.time_ms == time_ms:
+                    return
 
-            if prev_marker and prev_marker.time_ms == time_ms:
-                return
+                prev_marker = next_marker.prev
 
             self._link_markers(prev_marker, marker)
             self._link_markers(marker, next_marker)
