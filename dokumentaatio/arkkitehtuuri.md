@@ -1,3 +1,5 @@
+# Luokkakaavio
+
 ```mermaid
 classDiagram
     MainWindow..>Project
@@ -35,4 +37,35 @@ classDiagram
         +play()
         +pause()
     }
+```
+
+# Sekvenssikaavio 
+```mermaid
+sequenceDiagram
+    actor User
+    participant MainWindow
+    participant Project
+    participant AudioPlayer
+    User->>MainWindow: Drag playback bar to 0:30
+    MainWindow->>AudioPlayer: goto_s(30)
+    User->>+MainWindow: Click set marker button
+    MainWindow->>+AudioPlayer: get_time_ms()
+    AudioPlayer-->>-MainWindow: 30000
+    MainWindow->>-Project: add_marker(30000)
+    Project-->>+MainWindow: Signal marker_added(30000)
+    MainWindow->-MainWindow: add_marker_widget(30000)
+    User->>MainWindow: Drag playback bar to 0:15
+    MainWindow->>AudioPlayer: goto_s(15)
+    User->>+MainWindow: Click jump to next button
+    MainWindow->>+AudioPlayer: get_time_ms()
+    AudioPlayer-->>-MainWindow: 15000
+    MainWindow->>+Project: get_next_marker_time_ms(15000)
+    Project-->>-MainWindow: 30000
+    MainWindow->>-AudioPlayer: play_from_ms(30000)
+    AudioPlayer-->>+MainWindow: Signal time_changed(30)
+    MainWindow->-MainWindow: update playback bar to 30s
+    AudioPlayer-->>User: play music starting from 30s
+    AudioPlayer-->>+MainWindow: Signal time_changed(31)
+    MainWindow->-MainWindow: update playback bar to 31s
+
 ```
