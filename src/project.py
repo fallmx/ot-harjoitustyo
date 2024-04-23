@@ -45,10 +45,10 @@ class Project(QObject):
             if marker.prev is not None:
                 prev_time_ms = marker.prev.time_ms
 
-            if prev_time_ms > time_ms:
+            if prev_time_ms >= time_ms:
                 return None
 
-            if prev_time_ms <= time_ms < marker.time_ms:
+            if prev_time_ms < time_ms <= marker.time_ms:
                 return marker
 
             marker = marker.next
