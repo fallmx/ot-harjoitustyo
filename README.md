@@ -32,3 +32,5 @@ https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/vaatimusmaar
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/tuntikirjanpito.md
 
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/changelog.md
+
+https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/arkkitehtuuri.md
