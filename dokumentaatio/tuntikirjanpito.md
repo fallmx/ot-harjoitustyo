@@ -9,4 +9,5 @@
 | 16.4  | 9    | Add markers and playback bar |
 | 23.4  | 2    | Add jumping to next marker |
 | 23.4  | 1    | Add testing of Project class |
-| yht.  | 26   |  |
+| 23.4  | 3    | Miscellaneous bug fixing and documentation |
+| yht.  | 29   |  |
