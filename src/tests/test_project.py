@@ -28,14 +28,14 @@ class TestProject(unittest.TestCase):
         self.assertEqual(second_time_ms, 2000)
 
     def test_get_last_marker(self):
-        none = self.project.get_last_marker()
+        none = self.project._get_last_marker()
 
         self.assertIsNone(none)
 
         self.project.add_marker(1000)
         self.project.add_marker(2000)
 
-        last = self.project.get_last_marker()
+        last = self.project._get_last_marker()
 
         last_time_ms = last.time_ms
         self.assertEqual(last_time_ms, 2000)

@@ -13,49 +13,49 @@ class AudioPlayer(QObject):
 
     def __init__(self):
         super().__init__()
-        self.data: numpy.ndarray = None
-        self.samplerate: int = None
+        self._data: numpy.ndarray = None
+        self._samplerate: int = None
 
-        self.stream: sd.OutputStream = None
-        self.sample = 0
-        self.stopped = False
-        self.stop_sample: int = None
+        self._stream: sd.OutputStream = None
+        self._sample = 0
+        self._stopped = False
+        self._stop_sample: int = None
 
         self._last_time_seconds = 0
 
-    def time_seconds(self) -> int:
-        return self.sample // self.samplerate
+    def get_time_s(self) -> int:
+        return self._sample // self._samplerate
 
     def get_time_ms(self) -> int:
-        return self.sample * 1000 // self.samplerate
+        return self._sample * 1000 // self._samplerate
 
     def stop_at_time_ms(self, time_ms: int):
-        self.stop_sample = self.samplerate * time_ms // 1000
+        self._stop_sample = self._samplerate * time_ms // 1000
 
-    def finished_callback(self):
-        if self.stopped:
-            self.init_stream()
-            self.stopped = False
+    def _finished_callback(self):
+        if self._stopped:
+            self._init_stream()
+            self._stopped = False
 
         self.paused.emit()
 
-    def get_sample_boundary(self):
-        if self.stop_sample is not None and self.sample < self.stop_sample:
-            return self.stop_sample
+    def _get_sample_boundary(self):
+        if self._stop_sample is not None and self._sample < self._stop_sample:
+            return self._stop_sample
 
-        return len(self.data)
+        return len(self._data)
 
-    def init_stream(self):
+    def _init_stream(self):
         def callback(outdata: numpy.ndarray,
                      frames: int,
                      _time,
                      _status):
-            chunksize = min(self.get_sample_boundary() - self.sample, frames)
-            outdata[:chunksize] = self.data[self.sample:self.sample + chunksize]
+            chunksize = min(self._get_sample_boundary() - self._sample, frames)
+            outdata[:chunksize] = self._data[self._sample:self._sample + chunksize]
 
-            self.sample += chunksize
+            self._sample += chunksize
 
-            current_time = self.time_seconds()
+            current_time = self.get_time_s()
 
             if current_time != self._last_time_seconds:
                 self._last_time_seconds = current_time
@@ -63,48 +63,48 @@ class AudioPlayer(QObject):
 
             if chunksize < frames:
                 outdata[chunksize:] = 0
-                self.stopped = True
+                self._stopped = True
                 raise sd.CallbackStop()
 
-        self.stream = sd.OutputStream(
-            samplerate=self.samplerate,
+        self._stream = sd.OutputStream(
+            samplerate=self._samplerate,
             channels=2,
             callback=callback,
-            finished_callback=self.finished_callback
+            finished_callback=self._finished_callback
         )
 
     def load_file(self, path: str):
-        if self.stream is not None:
-            self.stream.abort()
+        if self._stream is not None:
+            self._stream.abort()
 
-        self.data, self.samplerate = sf.read(path, always_2d=True)
-        self.init_stream()
-        length = len(self.data) // self.samplerate
+        self._data, self._samplerate = sf.read(path, always_2d=True)
+        self._init_stream()
+        length = len(self._data) // self._samplerate
         self.file_loaded.emit(path, length)
-        self.goto(0)
+        self._goto(0)
 
-    def goto(self, sample: int):
-        if self.stream is not None:
-            self.sample = sample
-            self.time_changed.emit(self.time_seconds())
+    def _goto(self, sample: int):
+        if self._stream is not None:
+            self._sample = sample
+            self.time_changed.emit(self.get_time_s())
 
     def goto_s(self, time_s: int):
-        sample = self.samplerate * time_s
-        self.goto(sample)
+        sample = self._samplerate * time_s
+        self._goto(sample)
 
     def play_from_ms(self, time_ms: int):
-        sample = self.samplerate * time_ms // 1000
-        self.goto(sample)
+        sample = self._samplerate * time_ms // 1000
+        self._goto(sample)
         self.play()
 
     def play(self):
-        if self.stream is not None and self.stream.active is False:
-            if self.sample == len(self.data):
-                self.sample = 0
+        if self._stream is not None and self._stream.active is False:
+            if self._sample == len(self._data):
+                self._sample = 0
 
-            self.stream.start()
+            self._stream.start()
             self.played.emit()
 
     def pause(self):
-        if self.stream is not None and self.stream.active is True:
-            self.stream.stop()
+        if self._stream is not None and self._stream.active is True:
+            self._stream.stop()
