@@ -34,3 +34,5 @@ https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/tuntikirjanp
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/changelog.md
 
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/arkkitehtuuri.md
+
+https://github.com/fallmx/ot-harjoitustyo/releases/tag/viikko5
