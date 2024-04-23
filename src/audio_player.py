@@ -29,7 +29,7 @@ class AudioPlayer(QObject):
     def get_time_ms(self) -> int:
         return self.sample * 1000 // self.samplerate
 
-    def stop_at_time_ms(self, time_ms):
+    def stop_at_time_ms(self, time_ms: int):
         self.stop_sample = self.samplerate * time_ms // 1000
 
     def finished_callback(self):
@@ -48,8 +48,8 @@ class AudioPlayer(QObject):
     def init_stream(self):
         def callback(outdata: numpy.ndarray,
                      frames: int,
-                     time,
-                     status):
+                     _time,
+                     _status):
             chunksize = min(self.get_sample_boundary() - self.sample, frames)
             outdata[:chunksize] = self.data[self.sample:self.sample + chunksize]
 
@@ -88,9 +88,14 @@ class AudioPlayer(QObject):
             self.sample = sample
             self.time_changed.emit(self.time_seconds())
 
-    def goto_s(self, time_s):
+    def goto_s(self, time_s: int):
         sample = self.samplerate * time_s
         self.goto(sample)
+
+    def play_from_ms(self, time_ms: int):
+        sample = self.samplerate * time_ms // 1000
+        self.goto(sample)
+        self.play()
 
     def play(self):
         if self.stream is not None and self.stream.active is False:

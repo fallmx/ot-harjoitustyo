@@ -59,10 +59,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.set_button.clicked.connect(self.set_marker)
         self.toolbar.addWidget(self.set_button)
 
+        self.jump_button = QtWidgets.QPushButton("Jump")
+        self.jump_button.setEnabled(False)
+        self.jump_button.clicked.connect(self.jump_to_next)
+        self.toolbar.addWidget(self.jump_button)
+
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar)
 
         self.playback_bar = PlaybackBar()
         self.playback_bar.setEnabled(False)
+        self.playback_bar.slider.sliderReleased.connect(
+            self.goto_from_slider_value)
+        self.playback_bar.slider.actionTriggered.connect(
+            self.playback_bar_moved)
         self.playback_bar.slider.valueChanged.connect(
             self.playback_bar_changed)
 
@@ -100,6 +109,12 @@ class MainWindow(QtWidgets.QMainWindow):
         time_ms = self.audio.get_time_ms()
         self.project.add_marker(time_ms)
 
+    @Slot()
+    def jump_to_next(self):
+        time_ms = self.audio.get_time_ms()
+        next_time_ms = self.project.get_next_marker_time_ms(time_ms)
+        self.audio.play_from_ms(next_time_ms)
+
     @Slot(int)
     def marker_added(self, time_ms: int):
         self.playback_bar.add_marker_widget(time_ms)
@@ -110,18 +125,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self.filename_text.setText(path)
         self.play_button.setEnabled(True)
         self.set_button.setEnabled(True)
+        self.jump_button.setEnabled(True)
         self.playback_bar.slider.setMaximum(length)
         self.playback_bar.setEnabled(True)
 
     @Slot(int)
-    def playback_bar_changed(self, new_time: int):
-        self.audio.goto_s(new_time)
+    def playback_bar_moved(self, action: int):
+        # QtWidgets.QAbstractSlider.SliderAction.SliderMove
+        enum_slider_move = 7
+
+        if action != enum_slider_move:
+            slider_pos = self.playback_bar.slider.sliderPosition()
+            self.audio.goto_s(slider_pos)
+
+    @Slot()
+    def goto_from_slider_value(self):
+        slider_value = self.playback_bar.slider.value()
+        self.audio.goto_s(slider_value)
 
     @Slot(int)
-    def time_changed(self, new_time: int):
+    def playback_bar_changed(self, new_time: int):
         self.time_text.setText(
             f"{self.to_timestamp(new_time)}/{self.to_timestamp(self.length)}")
 
+    @Slot(int)
+    def time_changed(self, new_time: int):
         if self.playback_bar.slider.isSliderDown() is False:
             self.playback_bar.slider.setValue(new_time)
 
