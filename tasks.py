@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 from invoke import task
 
 @task
@@ -7,3 +8,11 @@ def start(ctx):
 @task
 def lint(ctx):
     ctx.run("pylint src", pty=True)
+
+@task
+def test(ctx):
+    ctx.run("pytest src", pty=True)
+
+@task
+def coverage_report(ctx):
+    ctx.run("coverage run --branch -m pytest src; coverage html", pty=True)

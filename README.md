@@ -15,6 +15,18 @@ poetry run invoke start
 poetry run invoke lint
 ```
 
+## Testaus
+
+```
+poetry run invoke test
+```
+
+## Coverage
+
+```
+poetry run invoke coverage-report
+```
+
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/vaatimusmaarittely.md
 
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/tuntikirjanpito.md

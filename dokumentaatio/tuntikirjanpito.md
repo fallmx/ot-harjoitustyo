@@ -8,4 +8,5 @@
 | 15.4  | 3    | Add playback time |
 | 16.4  | 9    | Add markers and playback bar |
 | 23.4  | 2    | Add jumping to next marker |
-| yht.  | 25   |  |
+| 23.4  | 1    | Add testing of Project class |
+| yht.  | 26   |  |
