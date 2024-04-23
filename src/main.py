@@ -120,13 +120,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.playback_bar.add_marker_widget(time_ms)
 
     @Slot(str, int)
-    def file_loaded(self, path: str, length: int):
-        self.length = length
+    def file_loaded(self, path: str, length_s: int):
+        self.length = length_s
         self.filename_text.setText(path)
         self.play_button.setEnabled(True)
         self.set_button.setEnabled(True)
         self.jump_button.setEnabled(True)
-        self.playback_bar.slider.setMaximum(length)
+        self.playback_bar.slider.setMaximum(length_s)
         self.playback_bar.setEnabled(True)
 
     @Slot(int)
@@ -144,17 +144,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.audio.goto_s(slider_value)
 
     @Slot(int)
-    def playback_bar_changed(self, new_time: int):
+    def playback_bar_changed(self, new_time_s: int):
         self.time_text.setText(
-            f"{self.to_timestamp(new_time)}/{self.to_timestamp(self.length)}")
+            f"{self._to_timestamp(new_time_s)}/{self._to_timestamp(self.length)}")
 
     @Slot(int)
-    def time_changed(self, new_time: int):
+    def time_changed(self, new_time_s: int):
         if self.playback_bar.slider.isSliderDown() is False:
-            self.playback_bar.slider.setValue(new_time)
+            self.playback_bar.slider.setValue(new_time_s)
 
         next_marker_time_ms = self.project.get_next_marker_time_ms(
-            new_time * 1000)
+            new_time_s * 1000)
         self.audio.stop_at_time_ms(next_marker_time_ms)
 
     @Slot()
@@ -172,7 +172,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if path != "":
             self.audio.load_file(path)
 
-    def to_timestamp(self, time_seconds: int) -> str:
+    def _to_timestamp(self, time_seconds: int) -> str:
         minutes, seconds = divmod(time_seconds, 60)
         return f"{minutes}:{seconds:02}"
 
