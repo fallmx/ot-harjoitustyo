@@ -6,6 +6,14 @@ import soundfile as sf
 
 
 class AudioPlayer(QObject):
+    """Class to play audio files.
+    
+    Signals:
+        played: When playback is started.
+        paused: When playback is paused.
+        file_loaded: When a file is succesfully loaded.
+        time_changed: When the current second of playback changes.
+    """
     played = Signal()
     paused = Signal()
     file_loaded = Signal(str, int)
@@ -24,15 +32,23 @@ class AudioPlayer(QObject):
         self._last_time_seconds = 0
 
     def get_time_s(self) -> int:
+        """Current playback time in seconds."""
         return self._sample // self._samplerate
 
     def get_time_ms(self) -> int:
+        """Current playback time in milliseconds."""
         return self._sample * 1000 // self._samplerate
 
     def stop_at_time_ms(self, time_ms: int):
+        """Set a stop point for playback.
+        
+        Args:
+            time_ms: Time in milliseconds on which playback should stop.
+        """
         self._stop_sample = self._samplerate * time_ms // 1000
 
     def _finished_callback(self):
+        """Reinitializes stream so playback can continue."""
         if self._stopped:
             self._init_stream()
             self._stopped = False
@@ -40,12 +56,20 @@ class AudioPlayer(QObject):
         self.paused.emit()
 
     def _get_sample_boundary(self):
+        """Return nearest sample on which playback should be stopped.
+        
+        Playback should be stopped on a stop point or end of file.
+        """
         if self._stop_sample is not None and self._sample < self._stop_sample:
             return self._stop_sample
 
         return len(self._data)
 
     def _init_stream(self):
+        """Initializes an audio stream based on data from the loaded file.
+        
+        File needs decoded into self._data and this needs to be called before playing.
+        """
         def callback(outdata: numpy.ndarray,
                      frames: int,
                      _time,
@@ -74,6 +98,11 @@ class AudioPlayer(QObject):
         )
 
     def load_file(self, path: str):
+        """Load and decode file into memory.
+        
+        Args:
+            path: File to load.
+        """
         if self._stream is not None:
             self._stream.abort()
 
@@ -84,20 +113,38 @@ class AudioPlayer(QObject):
         self._goto(0)
 
     def _goto(self, sample: int):
+        """Set playback next sample.
+        
+        Sets sample where the audio playback thread will fetch data from next.
+
+        Args:
+            sample: Sample to set.
+        """
         if self._stream is not None:
             self._sample = sample
             self.time_changed.emit(self.get_time_s())
 
     def goto_s(self, time_s: int):
+        """Set playback.
+        
+        Args:
+            time_s: Time in seconds to set playback to.
+        """
         sample = self._samplerate * time_s
         self._goto(sample)
 
     def play_from_ms(self, time_ms: int):
+        """Jump to playing from timestamp.
+        
+        Args:
+            time_ms: Time in milliseconds to jump to.
+        """
         sample = self._samplerate * time_ms // 1000
         self._goto(sample)
         self.play()
 
     def play(self):
+        """Start playback from current time."""
         if self._stream is not None and self._stream.active is False:
             if self._sample == len(self._data):
                 self._sample = 0
@@ -106,5 +153,6 @@ class AudioPlayer(QObject):
             self.played.emit()
 
     def pause(self):
+        """Pause playback."""
         if self._stream is not None and self._stream.active is True:
             self._stream.stop()

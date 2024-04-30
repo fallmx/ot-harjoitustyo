@@ -31,6 +31,15 @@ class PlaybackBar(QtWidgets.QWidget):
 
 
 class MainWindow(QtWidgets.QMainWindow):
+    """Main window for the program.
+    
+    Attributes:
+        audio: AudioPlayer instance to use for audio playback.
+        project: Project instance to use for setting/getting markers.
+        project_path: Path of currently open project file, if one is open.
+        playing: Whether the window thinks audio is playing.
+        length: Lenght of currently loaded audio file in seconds.
+    """
     def __init__(self):
         super().__init__()
         self.audio = AudioPlayer()
@@ -117,12 +126,18 @@ class MainWindow(QtWidgets.QMainWindow):
         central_layout.addWidget(self.load_button)
         central_widget.setLayout(central_layout)
 
-    def set_project_path(self, path):
+    def set_project_path(self, path: str):
+        """Set currently open project path.
+        
+        Args:
+            path: Path to set.
+        """
         self.project_path = path
         self.setWindowTitle(f"{path} - soittokone")
 
     @Slot()
     def project_opened(self):
+        """Open an existing project from file with a file dialog."""
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self,
                                                         "Open project file",
                                                         getcwd(),
@@ -141,6 +156,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot()
     def project_saved(self):
+        """Save the currently open project with a file dialog."""
         if self.project_path is None:
             self.project_saved_as()
         else:
@@ -148,6 +164,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot()
     def project_saved_as(self):
+        """Save the currently open project as a new file with a file dialog."""
         path, _ = QtWidgets.QFileDialog.getSaveFileName(self,
                                                         "Save project file as",
                                                         getcwd() + "/untitled.skproj",
@@ -159,31 +176,46 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot()
     def played(self):
+        """Set the window to playing mode."""
         self.playing = True
         self.play_button.setText("Pause")
 
     @Slot()
     def paused(self):
+        """Set the window to paused mode."""
         self.playing = False
         self.play_button.setText("Play")
 
     @Slot()
     def set_marker(self):
+        """Add a new marker on the current playback time."""
         time_ms = self.audio.get_time_ms()
         self.project.add_marker(time_ms)
 
     @Slot()
     def jump_to_next(self):
+        """Jump to the next marker based on the current playback time."""
         time_ms = self.audio.get_time_ms()
         next_time_ms = self.project.get_next_marker_time_ms(time_ms)
         self.audio.play_from_ms(next_time_ms)
 
     @Slot(int)
     def marker_added(self, time_ms: int):
+        """Add a GUI-element for a newly added marker
+        
+        Args:
+            time_ms: Marker timestamp in milliseconds.
+        """
         self.playback_bar.add_marker_widget(time_ms)
 
     @Slot(str, int)
     def file_loaded(self, path: str, length_s: int):
+        """Set window state for a loaded file.
+
+        Args:
+            path: Path of the loaded file:
+            length: Length in seconds of the loaded file.
+        """
         self.length = length_s
         self.project.audio_path = path
         self.filename_text.setText(path)
@@ -196,6 +228,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot(int)
     def playback_bar_moved(self, action: int):
+        """Send playback bar move events, other than dragging, to AudioPlayer.
+        
+        Args:
+            action: Move event type (see QtWidgets.QAbstractSlider.SliderAction.SliderMove).
+        """
         # QtWidgets.QAbstractSlider.SliderAction.SliderMove
         enum_slider_move = 7
 
@@ -205,16 +242,30 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot()
     def goto_from_slider_value(self):
+        """Set audio playback from current playback bar value."""
         slider_value = self.playback_bar.slider.value()
         self.audio.goto_s(slider_value)
 
     @Slot(int)
     def playback_bar_changed(self, new_time_s: int):
+        """Update timestamp.
+        
+        Args:
+            new_time_s: New time in seconds.
+        """
         self.time_text.setText(
             f"{self._to_timestamp(new_time_s)}/{self._to_timestamp(self.length)}")
 
     @Slot(int)
     def time_changed(self, new_time_s: int):
+        """Update playback bar location.
+        
+        Also checks if sending a new stop time for the AudioPlayer is necessary
+        based on the new time.
+
+        Args:
+            new_time_s: New time in seconds.
+        """
         if self.playback_bar.slider.isSliderDown() is False:
             self.playback_bar.slider.setValue(new_time_s)
 
@@ -224,6 +275,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot()
     def toggle_playback(self):
+        """Toggles playback."""
         if self.playing:
             self.audio.pause()
         else:
@@ -231,6 +283,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot()
     def load_audio_file(self):
+        """Load a new audio file for the current project with a file dialog."""
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self,
                                                         "Load audio file",
                                                         getcwd())
