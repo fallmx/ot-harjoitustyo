@@ -6,7 +6,7 @@ from project import Project
 class TestProject(unittest.TestCase):
     def setUp(self):
         self.project = Project()
-    
+
     def test_empty_project_returns_zero_as_next_marker_time(self):
         next_time_ms = self.project.get_next_marker_time_ms(50)
         self.assertEqual(next_time_ms, 0)

@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+from os import getcwd
 from PySide6.QtCore import Slot, Qt
-from PySide6 import QtWidgets
+from PySide6 import QtWidgets, QtGui
 from audio_player import AudioPlayer
 from project import Project
+from project_persistence import ProjectPersistence
 
 
 class PlaybackBar(QtWidgets.QWidget):
@@ -14,18 +16,18 @@ class PlaybackBar(QtWidgets.QWidget):
         self.vlayout = QtWidgets.QVBoxLayout(self)
         self.vlayout.addWidget(self.slider)
 
-        self.marker_widget = QtWidgets.QWidget()
-        self.marker_layout = QtWidgets.QHBoxLayout(self)
-        self.marker_widget.setLayout(self.marker_layout)
+        self.marker_text = QtWidgets.QLabel()
 
-        self.vlayout.addWidget(self.marker_widget)
+        self.vlayout.addWidget(self.marker_text)
         self.vlayout.addStretch()
 
         self.setLayout(self.vlayout)
 
     def add_marker_widget(self, time_ms: int):
-        marker = QtWidgets.QLabel(f"{time_ms // 1000} s")
-        self.marker_layout.addWidget(marker)
+        seconds, milliseconds = divmod(time_ms, 1000)
+        new_marker_text = f"{seconds}.{milliseconds} s"
+        self.marker_text.setText(
+            f"{self.marker_text.text()} {new_marker_text}")
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -33,6 +35,8 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.audio = AudioPlayer()
         self.project = Project()
+
+        self.project_path: str = None
 
         self.playing = False
         self.length = 0
@@ -42,6 +46,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.audio.file_loaded.connect(self.file_loaded)
         self.audio.time_changed.connect(self.time_changed)
         self.project.marker_added.connect(self.marker_added)
+
+        self.menubar = QtWidgets.QMenuBar()
+
+        self.file_menu = self.menubar.addMenu("File")
+
+        self.open_project = QtGui.QAction("Open...")
+        self.open_project.triggered.connect(self.project_opened)
+
+        self.save_project = QtGui.QAction("Save")
+        self.save_project.triggered.connect(self.project_saved)
+
+        self.save_project_as = QtGui.QAction("Save as...")
+        self.save_project_as.triggered.connect(self.project_saved_as)
+
+        self.file_menu.addAction(self.open_project)
+        self.file_menu.addAction(self.save_project)
+        self.file_menu.addAction(self.save_project_as)
+
+        self.setMenuBar(self.menubar)
 
         self.toolbar = QtWidgets.QToolBar("Test")
         self.toolbar.setFloatable(False)
@@ -94,6 +117,46 @@ class MainWindow(QtWidgets.QMainWindow):
         central_layout.addWidget(self.load_button)
         central_widget.setLayout(central_layout)
 
+    def set_project_path(self, path):
+        self.project_path = path
+        self.setWindowTitle(f"{path} - soittokone")
+
+    @Slot()
+    def project_opened(self):
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(self,
+                                                        "Open project file",
+                                                        getcwd(),
+                                                        "soittokone project file (*.skproj)")
+        opened_project = ProjectPersistence.load_project(path)
+        self.audio.load_file(opened_project.audio_path)
+
+        self.project = opened_project
+        self.project.marker_added.connect(self.marker_added)
+        self.set_project_path(path)
+
+        self.playback_bar.marker_text.setText("")
+
+        for marker in self.project.get_markers():
+            self.playback_bar.add_marker_widget(marker.time_ms)
+
+    @Slot()
+    def project_saved(self):
+        if self.project_path is None:
+            self.project_saved_as()
+        else:
+            ProjectPersistence.save_project(self.project_path, self.project)
+
+    @Slot()
+    def project_saved_as(self):
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(self,
+                                                        "Save project file as",
+                                                        getcwd() + "/untitled.skproj",
+                                                        "soittokone project file (*.skproj)")
+
+        if path != "":
+            ProjectPersistence.save_project(path, self.project)
+            self.set_project_path(path)
+
     @Slot()
     def played(self):
         self.playing = True
@@ -122,12 +185,14 @@ class MainWindow(QtWidgets.QMainWindow):
     @Slot(str, int)
     def file_loaded(self, path: str, length_s: int):
         self.length = length_s
+        self.project.audio_path = path
         self.filename_text.setText(path)
         self.play_button.setEnabled(True)
         self.set_button.setEnabled(True)
         self.jump_button.setEnabled(True)
         self.playback_bar.slider.setMaximum(length_s)
         self.playback_bar.setEnabled(True)
+        self.time_changed(length_s)
 
     @Slot(int)
     def playback_bar_moved(self, action: int):
@@ -168,7 +233,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def load_audio_file(self):
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self,
                                                         "Load audio file",
-                                                        "/home")
+                                                        getcwd())
         if path != "":
             self.audio.load_file(path)
 

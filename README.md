@@ -21,6 +21,12 @@ poetry run invoke lint
 poetry run invoke test
 ```
 
+## Formatointi
+
+```
+poetry run invoke format
+```
+
 ## Coverage
 
 ```

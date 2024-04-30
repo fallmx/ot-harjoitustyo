@@ -21,6 +21,14 @@ class Project(QObject):
         super().__init__()
         self._first_marker: Marker = None
         self._maybe_next: Marker = None
+        self.audio_path: str = None
+
+    def get_markers(self):
+        marker = self._first_marker
+
+        while marker is not None:
+            yield marker
+            marker = marker.next
 
     def _get_last_marker(self) -> Marker | None:
         last = None
@@ -40,7 +48,7 @@ class Project(QObject):
             if marker is None:
                 return None
 
-            prev_time_ms = 0
+            prev_time_ms = -1
 
             if marker.prev is not None:
                 prev_time_ms = marker.prev.time_ms

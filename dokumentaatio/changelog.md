@@ -11,3 +11,7 @@
 ## Viikko 5
 
 - Nappi, josta äänentoisto hyppää seuraavaan merkkiin
+
+## Viikko 6
+
+- Merkit ja valittu äänitiedosto voidaan tallentaa/ladata projektitiedostosta
