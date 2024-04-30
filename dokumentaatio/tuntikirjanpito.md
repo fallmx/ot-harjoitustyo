@@ -11,4 +11,4 @@
 | 23.4  | 1    | Add testing of Project class |
 | 23.4  | 3    | Miscellaneous bug fixing and documentation |
 | 30.4  | 4    | Add saving and loading markers from a project file |
-| yht.  | 23   |  |
+| yht.  | 33   |  |
