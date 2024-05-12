@@ -12,4 +12,5 @@
 | 23.4  | 3    | Miscellaneous bug fixing and documentation |
 | 30.4  | 4    | Add saving and loading markers from a project file |
 | 30.4  | 1    | Tests and documentation |
-| yht.  | 34   |  |
+| 12.5  | 1    | Add error messages for file operations |
+| yht.  | 35   |  |

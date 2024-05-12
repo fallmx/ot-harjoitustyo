@@ -2,6 +2,7 @@
 from os import getcwd
 from PySide6.QtCore import Slot, Qt
 from PySide6 import QtWidgets, QtGui
+from soundfile import LibsndfileError
 from audio_player import AudioPlayer
 from project import Project
 from project_persistence import ProjectPersistence
@@ -32,7 +33,7 @@ class PlaybackBar(QtWidgets.QWidget):
 
 class MainWindow(QtWidgets.QMainWindow):
     """Main window for the program.
-    
+
     Attributes:
         audio: AudioPlayer instance to use for audio playback.
         project: Project instance to use for setting/getting markers.
@@ -40,6 +41,7 @@ class MainWindow(QtWidgets.QMainWindow):
         playing: Whether the window thinks audio is playing.
         length: Lenght of currently loaded audio file in seconds.
     """
+
     def __init__(self):
         super().__init__()
         self.audio = AudioPlayer()
@@ -75,7 +77,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setMenuBar(self.menubar)
 
-        self.toolbar = QtWidgets.QToolBar("Test")
+        self.toolbar = QtWidgets.QToolBar()
         self.toolbar.setFloatable(False)
         self.toolbar.setMovable(False)
 
@@ -128,7 +130,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def set_project_path(self, path: str):
         """Set currently open project path.
-        
+
         Args:
             path: Path to set.
         """
@@ -142,8 +144,17 @@ class MainWindow(QtWidgets.QMainWindow):
                                                         "Open project file",
                                                         getcwd(),
                                                         "soittokone project file (*.skproj)")
+
+        if path == "":
+            return
+
         opened_project = ProjectPersistence.load_project(path)
-        self.audio.load_file(opened_project.audio_path)
+
+        try:
+            self.audio.load_file(opened_project.audio_path)
+        except LibsndfileError as e:
+            self._error_message(str(e))
+            return
 
         self.project = opened_project
         self.project.marker_added.connect(self.marker_added)
@@ -160,7 +171,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.project_path is None:
             self.project_saved_as()
         else:
-            ProjectPersistence.save_project(self.project_path, self.project)
+            try:
+                ProjectPersistence.save_project(
+                    self.project_path, self.project)
+            except OSError as e:
+                self._error_message(
+                    f"Error saving '{e.filename}': {e.strerror}")
 
     @Slot()
     def project_saved_as(self):
@@ -171,7 +187,13 @@ class MainWindow(QtWidgets.QMainWindow):
                                                         "soittokone project file (*.skproj)")
 
         if path != "":
-            ProjectPersistence.save_project(path, self.project)
+            try:
+                ProjectPersistence.save_project(path, self.project)
+            except OSError as e:
+                self._error_message(
+                    f"Error saving '{e.filename}': {e.strerror}")
+                return
+
             self.set_project_path(path)
 
     @Slot()
@@ -202,7 +224,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @Slot(int)
     def marker_added(self, time_ms: int):
         """Add a GUI-element for a newly added marker
-        
+
         Args:
             time_ms: Marker timestamp in milliseconds.
         """
@@ -216,6 +238,10 @@ class MainWindow(QtWidgets.QMainWindow):
             path: Path of the loaded file:
             length: Length in seconds of the loaded file.
         """
+        if path == "":
+            self.file_unloaded()
+            return
+
         self.length = length_s
         self.project.audio_path = path
         self.filename_text.setText(path)
@@ -226,10 +252,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.playback_bar.setEnabled(True)
         self.time_changed(length_s)
 
+    @Slot()
+    def file_unloaded(self):
+        """Set window state for an unloaded file.
+
+        Happens when loading an empty project file.
+        """
+        self.length = 0
+        self.filename_text.setText("No audio file loaded")
+        self.play_button.setEnabled(False)
+        self.set_button.setEnabled(False)
+        self.jump_button.setEnabled(False)
+        self.playback_bar.setEnabled(False)
+        self.playback_bar.slider.setValue(0)
+
     @Slot(int)
     def playback_bar_moved(self, action: int):
         """Send playback bar move events, other than dragging, to AudioPlayer.
-        
+
         Args:
             action: Move event type (see QtWidgets.QAbstractSlider.SliderAction.SliderMove).
         """
@@ -249,7 +289,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @Slot(int)
     def playback_bar_changed(self, new_time_s: int):
         """Update timestamp.
-        
+
         Args:
             new_time_s: New time in seconds.
         """
@@ -259,7 +299,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @Slot(int)
     def time_changed(self, new_time_s: int):
         """Update playback bar location.
-        
+
         Also checks if sending a new stop time for the AudioPlayer is necessary
         based on the new time.
 
@@ -287,8 +327,17 @@ class MainWindow(QtWidgets.QMainWindow):
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self,
                                                         "Load audio file",
                                                         getcwd())
-        if path != "":
+
+        if path == "":
+            return
+
+        try:
             self.audio.load_file(path)
+        except LibsndfileError as e:
+            self._error_message(str(e))
+
+    def _error_message(self, error: str):
+        QtWidgets.QMessageBox.critical(self, "soittokone", error)
 
     def _to_timestamp(self, time_seconds: int) -> str:
         minutes, seconds = divmod(time_seconds, 60)
