@@ -11,8 +11,8 @@ class AudioPlayer(QObject):
     Signals:
         played: When playback is started.
         paused: When playback is paused.
-        file_loaded: When a file is succesfully loaded.
-        time_changed: When the current second of playback changes.
+        file_loaded(str path, int length_s): When a file is succesfully loaded.
+        time_changed:(int new_time_s) When the current second of playback changes.
     """
     played = Signal()
     paused = Signal()

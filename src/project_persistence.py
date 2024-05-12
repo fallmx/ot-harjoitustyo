@@ -15,8 +15,15 @@ class UnsupportedProjectFileVersionError(Exception):
 
 
 class ProjectPersistence:
+    """Class to handle saving and loading projects."""
     @staticmethod
     def save_project(path: str, project: Project):
+        """Saves project to file.
+
+        Args:
+            path: File path to save to.
+            project: Project to save.
+        """
         with open(path, "wb") as f:
             f.write(FILE_SIGNATURE)
             f.write(FILE_FORMAT_VERSION.to_bytes(2, "big"))
@@ -34,6 +41,11 @@ class ProjectPersistence:
 
     @staticmethod
     def load_project(path: str) -> Project:
+        """Loads project from file.
+
+        Args:
+            path: File path to load from.
+        """
         with open(path, "rb") as f:
             beginning = f.read(8)
 

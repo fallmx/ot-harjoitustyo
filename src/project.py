@@ -3,6 +3,14 @@ from PySide6.QtCore import QObject, Signal
 
 
 class Marker:
+    """Marker with a timestamp.
+
+    Attributes:
+        time_ms: Time in milliseconds of this marker.
+        prev: Previous marker in the doubly linked list.
+        next: Next marker in the doubly linked list.
+    """
+
     def __init__(self, time_ms: int):
         self.time_ms = time_ms
         self.prev: Marker = None
@@ -15,6 +23,15 @@ class Marker:
 
 
 class Project(QObject):
+    """Class to hold a marker project.
+
+    Stores markers and audio path. Markers are stored in a doubly linked list.
+
+    Attributes:
+        audio_path: Audio path of this project.
+    Signals:
+        marker_added(int time_ms): When a marker is added.
+    """
     marker_added = Signal(int)
 
     def __init__(self):
@@ -24,6 +41,7 @@ class Project(QObject):
         self.audio_path: str = None
 
     def get_markers(self):
+        """Returns a generator of the markers."""
         marker = self._first_marker
 
         while marker is not None:
@@ -62,6 +80,13 @@ class Project(QObject):
             marker = marker.next
 
     def get_next_marker_time_ms(self, time_ms: int) -> int:
+        """Get the next marker time where time_ms<=next_marker_time_ms.
+
+        If no next marker is found, return 0.
+
+        Args:
+            time_ms: Time in milliseconds from where the search is started.
+        """
         maybe_next = self._get_next_marker(time_ms, self._maybe_next)
 
         if maybe_next is not None:
@@ -82,6 +107,13 @@ class Project(QObject):
             marker2.prev = marker1
 
     def add_marker(self, time_ms: int):
+        """Add a marker.
+
+        Doesn't add duplicate markers on the same time_ms.
+
+        Args:
+            time_ms: Time in milliseconds to add the marker to.
+        """
         marker = Marker(time_ms)
 
         if self._first_marker is None:

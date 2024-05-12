@@ -19,6 +19,7 @@ classDiagram
         Slot jump_to_next
         Slot[int time_ms] marker_added
         Slot[str path, int length_s] file_loaded
+        Slot file_unloaded
         Slot[int action] playback_bar_moved
         Slot goto_from_slider_value
         Slot playback_bar_changed
@@ -36,7 +37,7 @@ classDiagram
         Signal played
         Signal paused
         Signal[str path, int length_s] file_loaded
-        Signal[str new_time_s] time_changed
+        Signal[int new_time_s] time_changed
         +get_time_s() int
         +get_time_ms() int
         +stop_at_time_ms(int time_ms)

@@ -128,7 +128,7 @@ class MainWindow(QtWidgets.QMainWindow):
         central_layout.addWidget(self.load_button)
         central_widget.setLayout(central_layout)
 
-    def set_project_path(self, path: str):
+    def _set_project_path(self, path: str):
         """Set currently open project path.
 
         Args:
@@ -158,7 +158,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.project = opened_project
         self.project.marker_added.connect(self.marker_added)
-        self.set_project_path(path)
+        self._set_project_path(path)
 
         self.playback_bar.marker_text.setText("")
 
@@ -194,7 +194,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     f"Error saving '{e.filename}': {e.strerror}")
                 return
 
-            self.set_project_path(path)
+            self._set_project_path(path)
 
     @Slot()
     def played(self):
