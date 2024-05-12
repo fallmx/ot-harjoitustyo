@@ -1,6 +1,6 @@
-# Ohjelmistotekniikka, harjoitustyö
+# soittokone
 
-Olen tekemässä **musiikintoistosovellusta**, jonka ominaisuudet tulevat keskittymään musiikin kanssa tahdissa *soittamiseen*.
+Sovelluksella voi soittaa äänitiedostoja, kuten säestysraitoja, ja lisätä tiettyihin ajankohtiin merkkejä, joissa toisto pysähtyy odottamaan signaalia käyttäjältä. Tällöin säestysraita, jossa on välillä hiljaisuuksia, voidaan tahdistaa aloittamaan soittamisen uudelleen käyttäjän toimesta, kun käyttäjä on esimerkiksi soittanut soolo-osuutensa loppuun.
 
 ## Käynnistys
 
