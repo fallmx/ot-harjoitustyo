@@ -35,6 +35,8 @@ poetry run invoke coverage-report
 
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/kayttoohje.md
 
+https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/testaus.md
+
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/vaatimusmaarittely.md
 
 https://github.com/fallmx/ot-harjoitustyo/blob/master/dokumentaatio/tuntikirjanpito.md
